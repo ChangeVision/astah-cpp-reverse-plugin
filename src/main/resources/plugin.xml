@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+   <extension point="com.change_vision.astah.ui.actionSets">
+      <actionSet
+            label="%action_set_label"
+            visible="true"
+            id="com.change_vision.astah.extension.plugin.cplusreverse.actionSet">
+         <menu
+               id="cplusreverse"
+               label="%menu_group"
+               path="tool/cplusreverse">
+         </menu>
+         <action
+			   label="%menu_label"
+               icon="icons/sample.gif"
+               class="com.change_vision.astah.extension.plugin.cplusreverse.TemplateAction"
+               tooltip="%menu_tooltip"
+               menubarPath="tool/cplusreverse/"
+               id="cplusreverse">
+         </action>
+     </actionSet>
+   </extension>
+</plugin>
