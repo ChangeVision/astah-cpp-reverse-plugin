@@ -2,21 +2,16 @@
 <plugin>
    <extension point="com.change_vision.astah.ui.actionSets">
       <actionSet
-            label="%action_set_label"
+            label="%cpp_reverse"
             visible="true"
             id="com.change_vision.astah.extension.plugin.cplusreverse.actionSet">
-         <menu
-               id="cplusreverse"
-               label="%menu_group"
-               path="tool/cplusreverse">
-         </menu>
          <action
-			   label="%menu_label"
+			   label="%cpp_reverse"
                icon="icons/sample.gif"
-               class="com.change_vision.astah.extension.plugin.cplusreverse.TemplateAction"
-               tooltip="%menu_tooltip"
-               menubarPath="tool/cplusreverse/"
-               id="cplusreverse">
+               class="com.change_vision.astah.extension.plugin.cplusreverse.actions.CPlusReverseAction"
+               tooltip="%cpp_reverse"
+               menubarPath="tool/c_plus/"
+               id="com.change_vision.astah.extension.plugin.cplusreverse.actions.CPlusReverseAction">
          </action>
      </actionSet>
    </extension>
