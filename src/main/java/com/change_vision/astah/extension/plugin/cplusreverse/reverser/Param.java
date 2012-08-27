@@ -2,8 +2,16 @@ package com.change_vision.astah.extension.plugin.cplusreverse.reverser;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.change_vision.jude.api.inf.editor.BasicModelEditor;
 import com.change_vision.jude.api.inf.editor.ModelEditorFactory;
@@ -11,6 +19,8 @@ import com.change_vision.jude.api.inf.exception.InvalidEditingException;
 import com.change_vision.jude.api.inf.exception.ProjectNotFoundException;
 import com.change_vision.jude.api.inf.model.IClass;
 import com.change_vision.jude.api.inf.model.IElement;
+import com.change_vision.jude.api.inf.model.IModel;
+import com.change_vision.jude.api.inf.model.INamedElement;
 import com.change_vision.jude.api.inf.model.IOperation;
 import com.change_vision.jude.api.inf.model.IParameter;
 
@@ -26,6 +36,7 @@ import com.change_vision.jude.api.inf.model.IParameter;
  *  ref,out
  */
 public class Param implements IConvertToJude {
+    private static final Logger logger = LoggerFactory.getLogger(Param.class);
 	
 	protected String type;
 	
@@ -97,9 +108,11 @@ public class Param implements IConvertToJude {
 		throws InvalidEditingException,	ClassNotFoundException,	ProjectNotFoundException {
 		Object[] result = filterKeyword(type);
 		String type = ((String) result[1]).trim();
-		if ("".equals(type) && !getTypeRefs().isEmpty()) {
-			type = getTypeRefs().get(0).value;
-		}
+        if ("".equals(type) && !getTypeRefs().isEmpty()) {
+            type = getTypeRefs().get(0).value;
+        } else if (!getTypeRefs().isEmpty() && 0 <= type.indexOf("<")) {
+            type = getTypeRefs().get(0).value + type;
+        }
 		String filteredType = Member.getTypeFromTypeDef(type).trim();
 		String[] typepaths;
 		if (filteredType.indexOf("<") != -1) {
@@ -131,7 +144,9 @@ public class Param implements IConvertToJude {
 		}
 		
 		IElement param = createParameter(parent, typepaths, paramArray, paramName);
-		dealKeyword(param, (HashSet) result[0]);
+		if(null != param) {
+		    dealKeyword(param, (HashSet) result[0]);
+		}
 		return param;
 	}
 
@@ -175,19 +190,12 @@ public class Param implements IConvertToJude {
 			toType = toType.replaceFirst("::", "");
 			keywords.add("::");
 		}
-		if (type.endsWith(AND)) {
-			toType = toType.replaceFirst(AND, "").trim();
-			keywords.add(AND);
-		}
-		if (type.trim().endsWith(STAR + STAR)) {
-			toType = toType.replaceFirst("\\*" + "\\*", "").trim();
-			keywords.add(STAR + STAR);
-		}
-		
-		if (type.trim().endsWith(STAR)) {
-			toType = toType.replaceFirst("\\*", "").trim();
-			keywords.add(STAR);
-		}
+        Pattern p = Pattern.compile(String.format("[\\%s|%s]*$", STAR, AND));
+        Matcher m = p.matcher(type);
+        if(m.find()) {
+            toType = toType.replace(m.group(), "").trim();
+            keywords.add(m.group());
+        }
 		return new Object[] {keywords, toType};
 	}
 	
@@ -204,14 +212,13 @@ public class Param implements IConvertToJude {
 	 */
 	protected IElement createParameter(IElement parent, String[] names, String paramArray, String paramName)
 		throws InvalidEditingException, ProjectNotFoundException, ClassNotFoundException {
-		BasicModelEditor basicModelEditor = ModelEditorFactory.getBasicModelEditor();
+	    BasicModelEditor basicModelEditor = ModelEditorFactory.getBasicModelEditor();
 		if (LanguageManager.getCurrentLanguagePrimitiveType().contains(names[names.length - 1])) {
 			return basicModelEditor.createParameter(((IOperation) parent), paramName
 					, names[names.length - 1] + paramArray);
 		} else {
 			IParameter parameter = null;
 			String type = names.length > 0 ? names[names.length -1].trim() : getType().trim();
-			
 			String[] namespace = new String[] {};
 			IClass classType = null;
 			if (names.length > 1) {
@@ -227,9 +234,43 @@ public class Param implements IConvertToJude {
 				} else {
 					type = Tool.filterInvalidChar(type);
 				}
-				if (parameter == null) {				
-					parameter = basicModelEditor.createParameter((IOperation) parent, paramName, type + paramArray);
-				}
+                if (parameter == null) {
+                    try {
+                        parameter = basicModelEditor.createParameter((IOperation) parent, paramName,
+                                type + paramArray);
+                    } catch (InvalidEditingException e) {
+                        // TODO 重複エラー回避
+                        if ("An element with the same name already exists.".equals(e.getMessage())) {
+                            INamedElement[] classes = null;
+                            if (parent.getOwner().getOwner() instanceof IClass) {
+                                IClass ownerClass = (IClass) parent.getOwner().getOwner();
+                                classes = ownerClass.getNestedClasses();
+                            } else if(parent.getOwner().getOwner() instanceof IModel) {
+                                IModel model = (IModel) parent.getOwner().getOwner();
+                                classes = model.getOwnedElements();
+                            }
+                            List<INamedElement> deleteClasses = new ArrayList<INamedElement>();
+                            for (int i = classes.length - 1; i >= 0; --i) {
+                                INamedElement clazz = classes[i];
+                                if (type.equals(clazz.getName())) {
+                                    logger.trace(String.format("%s", clazz.toString()));
+                                    deleteClasses.add(clazz);
+                                }
+                            }
+                            Iterator<INamedElement> it = deleteClasses.iterator();
+                            while (it.hasNext() && 1 < deleteClasses.size()) {
+                                ModelEditorFactory.getBasicModelEditor().delete(it.next());
+                                it.remove();
+                            }
+                            if (!deleteClasses.isEmpty()) {
+                                parameter = basicModelEditor.createParameter((IOperation) parent,
+                                        paramName, (IClass) deleteClasses.get(0));
+                            }
+                        } else {
+                            throw e;
+                        }
+                    }
+                }
 			}
 			return parameter;
 		}
@@ -248,4 +289,9 @@ public class Param implements IConvertToJude {
 		}
 		return null;
 	}
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+    }
 }

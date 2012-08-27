@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.xml.sax.SAXException;
 
 import com.change_vision.jude.api.inf.exception.InvalidEditingException;
@@ -45,9 +47,9 @@ public class CompoundDef implements IConvertToJude {
 	
 	String compoundName;
 
-	Vector templateParamList = new Vector();
+	List templateParamList = new ArrayList();
 
-	Vector sections = new Vector();
+	List sections = new ArrayList();
 	
 	StringBuilder detaileddescriptionParas = new StringBuilder();
 	
@@ -65,13 +67,13 @@ public class CompoundDef implements IConvertToJude {
 	int locationBodyEnd;
 	//
 	
-	Vector basecompoundList = new Vector();
+	List basecompoundList = new ArrayList();
 
-	Vector derivedcompoundList = new Vector();
+	List derivedcompoundList = new ArrayList();
 
-	Vector innerclass = new Vector();
+	List innerclass = new ArrayList();
 
-	Vector innernamespace = new Vector();
+	List innernamespace = new ArrayList();
 
 	public static Map compounddef = new HashMap();
 
@@ -81,11 +83,11 @@ public class CompoundDef implements IConvertToJude {
 	
 	public static final String KIND_INTERFACE = "interface";
 
-	public Vector getSections() {
+	public List getSections() {
 		return sections;
 	}
 
-	public void setSections(Vector sections) {
+	public void setSections(List sections) {
 		this.sections = sections;
 	}
 	
@@ -196,7 +198,7 @@ public class CompoundDef implements IConvertToJude {
 		basecompoundList.add(baseCompound);
 	}
 
-	public Vector getDerivedcompoundList() {
+	public List getDerivedcompoundList() {
 		return derivedcompoundList;
 	}
 
@@ -208,7 +210,7 @@ public class CompoundDef implements IConvertToJude {
 		this.derivedcompoundList.add(derivedcompoundList);
 	}
 
-	public Vector getBasecompoundList() {
+	public List getBasecompoundList() {
 		return basecompoundList;
 	}
 
@@ -220,7 +222,7 @@ public class CompoundDef implements IConvertToJude {
 		this.basecompoundList.add(basecompoundList);
 	}
 
-	public Vector getInnerclass() {
+	public List getInnerclass() {
 		return innerclass;
 	}
 
@@ -232,7 +234,7 @@ public class CompoundDef implements IConvertToJude {
 		this.innerclass = innerclass;
 	}
 
-	public Vector getInnernamespace() {
+	public List getInnernamespace() {
 		return innernamespace;
 	}
 
@@ -244,7 +246,7 @@ public class CompoundDef implements IConvertToJude {
 		this.innernamespace = innernamespace;
 	}
 	
-	public Vector getTemplateParamList() {
+	public List getTemplateParamList() {
 		return templateParamList;
 	}
 
@@ -259,7 +261,7 @@ public class CompoundDef implements IConvertToJude {
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof CompoundDef) {
-			return ((CompoundDef) obj).getCompounddefId().equals(this.getCompounddefId());
+			return ((CompoundDef) obj).getCompounddefId().equals(this.compounddefId);
 		} else {
 			return false;
 		}
@@ -267,12 +269,12 @@ public class CompoundDef implements IConvertToJude {
 	
 	public IElement convertToJudeModel(IElement parent, File[] files) throws InvalidEditingException,
 			ClassNotFoundException, ProjectNotFoundException, IOException, SAXException {
-		if (compounddef.get(this.getCompounddefId()) != null) {
+		if (compounddef.get(this.compounddefId) != null) {
 			return parent;
 		}
-		if (KIND_CLASS.equals(this.getCompounddefKind())||KIND_INTERFACE.equals(this.getCompounddefKind())) {
+		if (KIND_CLASS.equals(this.compounddefKind)||KIND_INTERFACE.equals(this.compounddefKind)) {
 			convertClass(parent, files);
-		} else if (KIND_NAMESPACE.equals(this.getCompounddefKind())) {
+		} else if (KIND_NAMESPACE.equals(this.compounddefKind)) {
 			convertPackage(files);
 		} else {
 			if (parent instanceof IPackage) {
@@ -287,10 +289,10 @@ public class CompoundDef implements IConvertToJude {
 			SAXException {
 		//deal with the kind is namespace
 		//new pkg
-		IPackage pkg = Tool.getPackage(getCompoundName().split("::"));
+		IPackage pkg = Tool.getPackage(compoundName.split("::"));
 		dealWithGlobalElements(pkg, files);
 		dealCompounddefInnerClass(files, pkg);
-		Vector innernamespaces = getInnernamespace();
+		List innernamespaces = getInnernamespace();
 		for (Iterator iter = innernamespaces.iterator(); iter.hasNext();) {
 			InnerNameSpace innerNamespace = (InnerNameSpace) iter.next();
 			for (int i = 0; i < files.length; i++) {
@@ -299,23 +301,23 @@ public class CompoundDef implements IConvertToJude {
 				}
 			}
 		}
-		compounddef.put(this.getCompounddefId(), pkg);
+		compounddef.put(this.compounddefId, pkg);
 	}
 
 	protected IClass convertClass(IElement parent, File[] files)
 			throws ProjectNotFoundException, ClassNotFoundException,
 			InvalidEditingException, SAXException, IOException {
 		IClass iclass = getIElement(parent);
-		String definition = "";
-		if (this.getBriefdescriptionPara() != null) {
-			definition += "\\brief ";
-			definition += getBriefdescriptionPara();
+		StringBuilder definition = new StringBuilder();
+		if (this.briefdescriptionPara != null) {
+			definition.append("\\brief ");
+			definition.append(this.briefdescriptionPara);
 		}
 		if(this.getDetaileddescriptionPara()!= null){
-			definition += this.getDetaileddescriptionPara().trim();	
+			definition.append(this.getDetaileddescriptionPara().trim());	
 		}
-		if (!"".equals(definition)) {
-			iclass.setDefinition(definition);
+		if (!"".equals(definition.toString())) {
+			iclass.setDefinition(definition.toString());
 		}
 		if(this.getCompounddefVisible()!=null){
 			iclass.setVisibility(this.getCompounddefVisible());
@@ -381,7 +383,7 @@ public class CompoundDef implements IConvertToJude {
 	void dealCompounddefInnerClass(File[] files, IElement pkg) throws IOException,
 			SAXException, InvalidEditingException, ClassNotFoundException, ProjectNotFoundException {
 		// new class in the pkg
-		Vector innerclasses = this.getInnerclass();
+		List innerclasses = this.getInnerclass();
 		for (Iterator iter = innerclasses.iterator(); iter.hasNext();) {
 			InnerClass innerCls = (InnerClass) iter.next();
 			for (int i = 0; i < files.length; i++) {
@@ -436,4 +438,9 @@ public class CompoundDef implements IConvertToJude {
 		}
 		return current;
 	}
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+    }
 }

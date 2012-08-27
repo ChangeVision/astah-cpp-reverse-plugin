@@ -173,7 +173,9 @@ public class MemberCPlus extends Member {
 				continue;
 			}
 			String paramName = param.length == 1 ? "param" + paramNum++ : param[1];
-			Tool.getOperationParameter(newOperation, paramName, param[0]);
+            if (null != newOperation) {
+                Tool.getOperationParameter(newOperation, paramName, param[0]);
+            }
 		}
 	}
 	

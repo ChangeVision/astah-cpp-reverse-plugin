@@ -143,6 +143,7 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 			logger.error(e1.getMessage(), e1);
 		} catch (UTFDataFormatException e1) { // #205 #219
 			// util.showWarningMessage(getMainFrame(), Messages.getMessage("doxygen_utf_exception.error_message"));
+            String messageStr = "";
 			String errorLocationFile = dxp.getErrorLocationFile();
 			if (errorLocationFile != null) {
 				int errorLocationLine = dxp.getErrorLocationLine();
@@ -150,17 +151,19 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 				int errorLocationBodyStart = dxp.getErrorLocationBodyStart();
 				int errorLocationBodyEnd = dxp.getErrorLocationBodyEnd();
 				String line_separator = System.getProperty("line.separator");
-				String messageStr = Messages.getMessage("doxygen_utf_exception_detail.error_message") + line_separator
+				messageStr = Messages.getMessage("doxygen_utf_exception_detail.error_message") + line_separator
 						+ "File:" + errorLocationFile + " Line:" + errorLocationLine + line_separator
 						+ "Body File:" + errorLocationBodyFile + " Start:" + errorLocationBodyStart + " End:" + errorLocationBodyEnd ;
-				util.showWarningMessage(getMainFrame(), messageStr);
 			} else {
-				util.showWarningMessage(getMainFrame(), Messages.getMessage("doxygen_utf_exception.error_message"));
-			}			
-			//
-			logger.error(e1.getMessage(), e1);
+			    messageStr = Messages.getMessage("doxygen_utf_exception.error_message");
+			}
+            //
+            logger.error(messageStr);
+            logger.error(e1.getMessage(), e1);
+            util.showWarningMessage(getMainFrame(), messageStr);
 		} catch (Throwable e1) { // #205 #219
 			// util.showWarningMessage(getMainFrame(), Messages.getMessage("AlertEditionDialog.error_message"));
+		    String messageStr = "";
 			String errorLocationFile = dxp.getErrorLocationFile();
 			if (errorLocationFile != null) {
 				int errorLocationLine = dxp.getErrorLocationLine();
@@ -168,14 +171,15 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 				int errorLocationBodyStart = dxp.getErrorLocationBodyStart();
 				int errorLocationBodyEnd = dxp.getErrorLocationBodyEnd();
 				String line_separator = System.getProperty("line.separator");
-				String messageStr = Messages.getMessage("doxygen_parse_exception_detail.error_message") + line_separator
+				messageStr = Messages.getMessage("doxygen_parse_exception_detail.error_message") + line_separator
 						+ "File:" + errorLocationFile + " Line:" + errorLocationLine + line_separator
 						+ "Body File:" + errorLocationBodyFile + " Start:" + errorLocationBodyStart + " End:" + errorLocationBodyEnd ;
-				util.showWarningMessage(getMainFrame(), messageStr);
 			} else {
-				util.showWarningMessage(getMainFrame(), Messages.getMessage("doxygen_parse_exception.error_message"));
+                messageStr = Messages.getMessage("doxygen_parse_exception.error_message");
 			}
-			logger.error(e1.getMessage(), e1);
+            logger.error(messageStr);
+            logger.error(e1.getMessage(), e1);
+            util.showWarningMessage(getMainFrame(), messageStr);
 		} finally {
 			if (TransactionManager.isInTransaction()) {
 				TransactionManager.abortTransaction();

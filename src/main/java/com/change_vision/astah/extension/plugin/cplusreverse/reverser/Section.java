@@ -1,11 +1,14 @@
 package com.change_vision.astah.extension.plugin.cplusreverse.reverser;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.xml.sax.SAXException;
-
 
 import com.change_vision.jude.api.inf.exception.InvalidEditingException;
 import com.change_vision.jude.api.inf.exception.ProjectNotFoundException;
@@ -21,7 +24,7 @@ import com.change_vision.jude.api.inf.model.IElement;
  */
 public class Section implements IConvertToJude {
 	private String kind;
-	private Vector members;
+	private List members;
 	private CompoundDef parent;
 
 	public CompoundDef getParent() {
@@ -33,14 +36,14 @@ public class Section implements IConvertToJude {
 	}
 
 	public Section() {
-		members = new Vector();
+		members = new ArrayList();
 	}
 
-	public Vector getMembers() {
+	public List getMembers() {
 		return members;
 	}
 
-	public void setMembers(Vector members) {
+	public void setMembers(List members) {
 		this.members = members;
 	}
 
@@ -65,4 +68,9 @@ public class Section implements IConvertToJude {
 		}
 		return parent;
 	}
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+    }
 }

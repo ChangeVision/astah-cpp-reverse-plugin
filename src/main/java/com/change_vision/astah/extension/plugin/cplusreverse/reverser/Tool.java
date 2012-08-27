@@ -7,6 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.codehaus.janino.Java.UnaryOperation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.change_vision.jude.api.inf.editor.BasicModelEditor;
 import com.change_vision.jude.api.inf.editor.ModelEditorFactory;
 import com.change_vision.jude.api.inf.exception.InvalidEditingException;
@@ -25,6 +29,7 @@ import com.change_vision.jude.api.inf.project.ProjectAccessor;
 import com.change_vision.jude.api.inf.project.ProjectAccessorFactory;
 
 public class Tool {
+    private static final Logger logger = LoggerFactory.getLogger(Tool.class);
 	
 	public static List GlobalList = new ArrayList();
 	
@@ -99,7 +104,30 @@ public class Tool {
 		if (nestClasses != null) {
 			return nestClasses;
 		}
-		return setLanguage(ModelEditorFactory.getBasicModelEditor().createClass(parentclass, className));
+		try {
+            return setLanguage(ModelEditorFactory.getBasicModelEditor().createClass(parentclass, className));
+        } catch (InvalidEditingException e) {
+            // TODO 重複エラー回避
+            if ("An element with the same name already exists.".equals(e.getMessage())) {
+                IClass ownerClass = (IClass) parentclass;
+                IClass[] classes = ownerClass.getNestedClasses();
+                List<IClass> deleteClasses = new ArrayList<IClass>();
+                for (int i = classes.length - 1; i >= 0; --i) {
+                    IClass clazz = classes[i];
+                    if (className.equals(clazz.getName())) {
+                        logger.trace(String.format("%s", clazz.toString()));
+                        deleteClasses.add(clazz);
+                    }
+                }
+                Iterator<IClass> it = deleteClasses.iterator();
+                while (it.hasNext() && 1 < deleteClasses.size()) {
+                    ModelEditorFactory.getBasicModelEditor().delete(it.next());
+                    it.remove();
+                }
+                return setLanguage(deleteClasses.get(0));
+            }
+            throw e;
+        }
 	}
 	
 	public static IClass getNestedClass(IClass parentclass, String className) {
@@ -132,6 +160,7 @@ public class Tool {
 				return (IClass) namedElements[i];
 			}
 		}
+        logger.trace("{}.{}", parentPkg.toString(), className);
 		return setLanguage(ModelEditorFactory.getBasicModelEditor().createClass(parentPkg, className));
 	}
 	public static IClass getClass(String type, List<Ref> typeRefs) throws InvalidEditingException, ClassNotFoundException, ProjectNotFoundException {
@@ -291,7 +320,38 @@ public class Tool {
 				name = changeSameAttributeName(target, name);			
 			}
 		}
-		return setLanguage(ModelEditorFactory.getBasicModelEditor().createAttribute(target, name, type));
+        try {
+            return setLanguage(ModelEditorFactory.getBasicModelEditor().createAttribute(target, name, type));
+        } catch (InvalidEditingException e) {
+            // TODO 重複エラー回避
+            if ("An element with the same name already exists.".equals(e.getMessage())) {
+                IClass ownerClass = null;
+                if (target.getOwner() instanceof IModel) {
+                    ownerClass = target;
+                } else {
+                    ownerClass = (IClass) target.getOwner();
+                }
+                IClass[] classes = ownerClass.getNestedClasses();
+                List<IClass> deleteClasses = new ArrayList<IClass>();
+                for (int i = classes.length - 1; i >= 0; --i) {
+                    IClass clazz = classes[i];
+                    if (type.equals(clazz.getName())) {
+                        logger.trace(String.format("%s", clazz.toString()));
+                        deleteClasses.add(clazz);
+                    }
+                }
+                Iterator<IClass> it = deleteClasses.iterator();
+                while (it.hasNext() && 1 < deleteClasses.size()) {
+                    ModelEditorFactory.getBasicModelEditor().delete(it.next());
+                    it.remove();
+                }
+                if (deleteClasses.isEmpty()) {
+                    return null;
+                }
+                return null;
+            }
+            throw e;
+        }
 	}
 	
 	/**
@@ -304,34 +364,92 @@ public class Tool {
 	public static IAttribute getAttribute(IClass target, String name, String type) throws InvalidEditingException, ClassNotFoundException {
 		IAttribute[] attrs = target.getAttributes();
 		for (int i = 0; i < attrs.length; i++) {
-			if (attrs[i].getName().equals(name) && attrs[i].getTypeExpression().equals(type)) {
+			if (attrs[i].getName().equals(name)) {
 				name = changeSameAttributeName(target, name);
 			}
 		}
-		return setLanguage(ModelEditorFactory.getBasicModelEditor().createAttribute(target, name, type));
+        try {
+            return setLanguage(ModelEditorFactory.getBasicModelEditor().createAttribute(target, name, type));
+        } catch (InvalidEditingException e) {
+            // TODO 重複エラー回避
+            if ("An element with the same name already exists.".equals(e.getMessage())) {
+                IClass ownerClass = null;
+                if (target.getOwner() instanceof IModel) {
+                    ownerClass = target;
+                } else {
+                    ownerClass = (IClass) target.getOwner();
+                }
+                IClass[] classes = ownerClass.getNestedClasses();
+                List<IClass> deleteClasses = new ArrayList<IClass>();
+                for (int i = classes.length - 1; i >= 0; --i) {
+                    IClass clazz = classes[i];
+                    if (type.equals(clazz.getName())) {
+                        logger.trace(String.format("%s", clazz.toString()));
+                        deleteClasses.add(clazz);
+                    }
+                }
+                Iterator<IClass> it = deleteClasses.iterator();
+                while (it.hasNext() && 1 < deleteClasses.size()) {
+                    ModelEditorFactory.getBasicModelEditor().delete(it.next());
+                    it.remove();
+                }
+                if (deleteClasses.isEmpty()) {
+                    return null;
+                }
+                return setLanguage(ModelEditorFactory.getBasicModelEditor().createAttribute(target,
+                        name, deleteClasses.get(0)));
+            }
+            throw e;
+        }
 	}
 	
 	public static IOperation getOperation(IClass target, String name, String type) throws InvalidEditingException, ClassNotFoundException {
-//		IOperation[] attrs = target.getOperations();
-		//no need to judge
-//		for (int i = 0; i < attrs.length; i++) {
-//			if (attrs[i].getName().equals(name)
-//					&& ((type == null && type == attrs[i].getReturnTypeExpression()) || type.equals(attrs[i].getReturnTypeExpression()))) {
-//				return attrs[i];
-//			}
-//		}
-		return setLanguage(ModelEditorFactory.getBasicModelEditor().createOperation(target, name, type));
+		try {
+            return setLanguage(ModelEditorFactory.getBasicModelEditor().createOperation(target, name, type));
+        } catch (InvalidEditingException e) {
+            // TODO 重複エラー回避
+            if ("classifier_unique_name_error.message".equals(e.getMessage())
+                    || "An element with the same name already exists.".equals(e.getMessage())) {
+                IClass ownerClass = (IClass) target.getOwner();
+                IClass[] classes = ownerClass.getNestedClasses();
+                List<IClass> deleteClasses = new ArrayList<IClass>();
+                for (int i = classes.length - 1; i >= 0; --i) {
+                    IClass clazz = classes[i];
+                    if (type.equals(clazz.getName())) {
+                        logger.trace(String.format("%s", clazz.toString()));
+                        deleteClasses.add(clazz);
+                    }
+                }
+                Iterator<IClass> it = deleteClasses.iterator();
+                while (it.hasNext() && 1 < deleteClasses.size()) {
+                    ModelEditorFactory.getBasicModelEditor().delete(it.next());
+                    it.remove();
+                }
+                return setLanguage(ModelEditorFactory.getBasicModelEditor().createOperation(target,
+                        name, deleteClasses.get(0)));
+            } else if("parameter_name_should_be_unique.message".equals(e.getMessage())) {
+                IClass ownerClass = target;
+                IClass[] classes = ownerClass.getNestedClasses();
+                List<IClass> deleteClasses = new ArrayList<IClass>();
+                for (int i = classes.length - 1; i >= 0; --i) {
+                    IClass clazz = classes[i];
+                    if (type.equals(clazz.getName())) {
+                        logger.trace(String.format("%s", clazz.toString()));
+                        deleteClasses.add(clazz);
+                    }
+                }
+                Iterator<IClass> it = deleteClasses.iterator();
+                while (it.hasNext() && 1 < deleteClasses.size()) {
+                    ModelEditorFactory.getBasicModelEditor().delete(it.next());
+                    it.remove();
+                }
+                return null;
+            }
+            throw e;
+        }
 	}
 
 	public static IOperation getOperation(IClass target, String name, IClass type) throws InvalidEditingException, ClassNotFoundException {
-//		IOperation[] attrs = target.getOperations();
-		//no need to judge
-//		for (int i = 0; i < attrs.length; i++) {
-//			if (attrs[i].getName().equals(name)
-//					&& ((type == null && type == attrs[i].getReturnType()) || type.equals(attrs[i].getReturnType()))) {
-//				return attrs[i];
-//			}
-//		}
 		return setLanguage(ModelEditorFactory.getBasicModelEditor().createOperation(target, name, type));
 	}
 	
@@ -587,7 +705,29 @@ public class Tool {
 		if (tParams.length < actualClasses.length) {
 			IClass paraType = null;
 			for (int i = 0; i < actualClasses.length - tParams.length; i++) {
-				basicModelEditor.createTemplateParameter(templateClass, "param" + i, paraType, null);
+		        try {
+	                basicModelEditor.createTemplateParameter(templateClass, "param" + i, paraType, null);
+		        } catch (InvalidEditingException e) {
+		            // TODO 重複エラー回避
+		            if ("An element with the same name already exists.".equals(e.getMessage())) {
+		                IClassifierTemplateParameter[] classes = templateClass.getTemplateParameters();
+		                List<IClassifierTemplateParameter> deleteClasses = new ArrayList<IClassifierTemplateParameter>();
+		                for (int ii = classes.length - 1; ii >= 0; --ii) {
+		                    IClassifierTemplateParameter clazz = classes[ii];
+		                    if (("param" + i).equals(clazz.getName())) {
+		                        logger.trace(String.format("%s", clazz.toString()));
+		                        deleteClasses.add(clazz);
+		                    }
+		                }
+		                Iterator<IClassifierTemplateParameter> it = deleteClasses.iterator();
+		                while (it.hasNext() && 1 < deleteClasses.size()) {
+		                    ModelEditorFactory.getBasicModelEditor().delete(it.next());
+		                    it.remove();
+		                }
+		            } else {
+	                    throw e;		                
+		            }
+		        }
 			}
 		}
 		tParams = templateClass.getTemplateParameters();
@@ -598,7 +738,7 @@ public class Tool {
 			anonimousClass = getTempClassForAnominousClass(parent);
 		}
 		ITemplateBinding binding = basicModelEditor.createTemplateBinding(anonimousClass, templateClass);
-		for (int i = 0; i < actualClasses.length; i++) {
+		for (int i = 0; i < tParams.length; i++) {
 			IClassifierTemplateParameter param = (IClassifierTemplateParameter)tParams[i];
 			try {
 				binding.addActualParameter(param, actualClasses[i][0]);

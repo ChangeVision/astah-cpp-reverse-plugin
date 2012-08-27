@@ -52,7 +52,10 @@ public class TempleParam extends Param {
 				basicModelEditor.createTemplateParameter(((IClass) parent), paramName, type, null);
 				                                      //
 			} else {
-				basicModelEditor.createTemplateParameter(((IClass) parent), paramName, type, defValObj);
+                if (!"".equals(type)) {
+                    basicModelEditor.createTemplateParameter(((IClass) parent), paramName, type,
+                            defValObj);
+                }
 			}
 		} else {
 			if ("class".equals(result[0])) {

@@ -9,6 +9,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.digester.Digester;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -35,7 +37,7 @@ public class DoxygenXmlParser {
 	
 	private static final Logger logger = LoggerFactory.getLogger(DoxygenXmlParser.class);
 	
-	List compounds = new ArrayList();
+	List<Compound> compounds = new ArrayList<Compound>();
 	static CompoundDef lastCompoundDef;
 	
 	public void addCompound(Compound compound) {
@@ -76,38 +78,64 @@ public class DoxygenXmlParser {
 		TransactionManager.beginTransaction();
 		
 		//get the availability the concourse
-		List compounddefes = doxygenXmlParser.parserIndexXml(indexFile);
+        long thestart = System.currentTimeMillis();
+		List<CompoundDef> compounddefes = doxygenXmlParser.parserIndexXml(indexFile);
+        logger.trace(String.format("xml parse:%d", System.currentTimeMillis() - thestart));
 
-		for (Iterator iterator = compounddefes.iterator(); iterator.hasNext();) {
+        logger.trace(String.format("first deal namespace"));
+		for (Iterator<CompoundDef> iterator = compounddefes.iterator(); iterator.hasNext();) {
+            long start = System.currentTimeMillis();
 			//first deal namespace
-			CompoundDef compounddef = (CompoundDef) iterator.next();
-			logger.debug(compounddef.toString());
-			if (CompoundDef.KIND_NAMESPACE.equals(compounddef.getCompounddefKind())||CompoundDef.KIND_INTERFACE.equals(compounddef.getCompounddefKind())) {
-				// #205 #219
-				// (compounddef).convertToJudeModel(project, indexFile.getParentFile().listFiles());
-				lastCompoundDef = compounddef;
-				compounddef.convertToJudeModel(project, indexFile.getParentFile().listFiles());
-				//
-			}
+			CompoundDef compounddef = iterator.next();
+			try {
+                if (CompoundDef.KIND_NAMESPACE.equals(compounddef.getCompounddefKind())||CompoundDef.KIND_INTERFACE.equals(compounddef.getCompounddefKind())) {
+                	// #205 #219
+                	// (compounddef).convertToJudeModel(project, indexFile.getParentFile().listFiles());
+                	lastCompoundDef = compounddef;
+                	compounddef.convertToJudeModel(project, indexFile.getParentFile().listFiles());
+                	//
+                }
+            } catch (Exception e) {
+                logger.error(ToStringBuilder.reflectionToString(compounddef,
+                        ToStringStyle.MULTI_LINE_STYLE));
+                throw e;
+            }
+			logger.trace(String.format("%d", System.currentTimeMillis() - start));
 		}
-		
-		for (Iterator iterator = compounddefes.iterator(); iterator.hasNext();) {
+        logger.trace(String.format("second deal all the compound"));
+		for (Iterator<CompoundDef> iterator = compounddefes.iterator(); iterator.hasNext();) {
 			//second deal all the compound
 			// #205 #219
 			// ((CompoundDef) iterator.next()).convertToJudeModel(project, indexFile.getParentFile().listFiles());
-			CompoundDef compounddef = (CompoundDef) iterator.next();
+            long start = System.currentTimeMillis();
+			CompoundDef compounddef = iterator.next();
 			lastCompoundDef = compounddef;
-			compounddef.convertToJudeModel(project, indexFile.getParentFile().listFiles());
+			try {
+                compounddef.convertToJudeModel(project, indexFile.getParentFile().listFiles());
+            } catch (Exception e) {
+                logger.error(ToStringBuilder.reflectionToString(compounddef,
+                        ToStringStyle.MULTI_LINE_STYLE));
+                throw e;
+            }
+            logger.trace(String.format("%d", System.currentTimeMillis() - start));
 			//
 		}
-		
-		for (Iterator iterator = compounddefes.iterator(); iterator.hasNext();) {
+        logger.trace(String.format("third convert all children"));
+		for (Iterator<CompoundDef> iterator = compounddefes.iterator(); iterator.hasNext();) {
 			//third convert all children
 			// #205 #219
 			// ((CompoundDef) iterator.next()).convertChildren(indexFile.getParentFile().listFiles());
-			CompoundDef compounddef = (CompoundDef) iterator.next();
+		    long start = System.currentTimeMillis();
+			CompoundDef compounddef = iterator.next();
 			lastCompoundDef = compounddef;
-			compounddef.convertChildren(indexFile.getParentFile().listFiles());
+			try {
+                compounddef.convertChildren(indexFile.getParentFile().listFiles());
+            } catch (Exception e) {
+                logger.error(ToStringBuilder.reflectionToString(compounddef,
+                        ToStringStyle.MULTI_LINE_STYLE));
+                throw e;
+            }
+			logger.trace(String.format("%d", System.currentTimeMillis() - start));
 			//
 		}
 		
@@ -193,7 +221,7 @@ public class DoxygenXmlParser {
 	 * @throws IOException
 	 * @throws SAXException
 	 */
-	private List parserIndexXml(File indexFile) throws IOException, SAXException
+	private List<CompoundDef> parserIndexXml(File indexFile) throws IOException, SAXException
 			, ProjectNotFoundException, ClassNotFoundException, InvalidEditingException {
 		// init digester for parser index.xml...
 		Digester digester = new Digester();
@@ -232,7 +260,7 @@ public class DoxygenXmlParser {
 			}
 		}
 		
-		List compounddefs = new ArrayList();
+		List<CompoundDef> compounddefs = new ArrayList<CompoundDef>();
 		for (Iterator iterator = doxygenXmlParser.compounds.iterator(); iterator.hasNext();) {
 			Compound compound = (Compound) iterator.next();
 			//parse the kindName is class or interface or struct or union
@@ -397,7 +425,7 @@ public class DoxygenXmlParser {
 		digester.addBeanPropertySetter("doxygen/compounddef/sectiondef/memberdef/detaileddescription/para",
 				"detaileddescriptionPara");
 		digester.addSetNext("doxygen/compounddef/sectiondef/memberdef", "addMember");
-		
+        logger.debug("file:{}", file);
 		return (CompoundDef) digester.parse(file);
 	}
 
