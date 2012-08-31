@@ -7,7 +7,8 @@ public class DoxygenDigester extends Digester {
 	
 	static String current = "";
 
-	@Override
+	@SuppressWarnings("unchecked")
+    @Override
 	public void characters(char[] buffer, int start, int length) throws SAXException {
 		super.characters(buffer, start, length);
 		if (! bodyText.toString().trim().equals("")) {

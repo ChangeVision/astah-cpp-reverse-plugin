@@ -11,11 +11,11 @@ public class LanguageManager {
 
 	public static final String LANGUAGE_CSHARP = "csharp_primitivite_type";
 
-	final static Set Java_PRIMITIVE_TYPE = new HashSet();
+	final static Set<String> Java_PRIMITIVE_TYPE = new HashSet<String>();
 
-	final static Set CSHARP_PRIMITIVE_TYPE = new HashSet();
+	final static Set<String> CSHARP_PRIMITIVE_TYPE = new HashSet<String>();
 
-	final static Set C_PRIMITIVE_TYPE = new HashSet();
+	final static Set<String> C_PRIMITIVE_TYPE = new HashSet<String>();
 
 	static {
 		try {
@@ -29,14 +29,14 @@ public class LanguageManager {
 		}
 	}
 
-	static Set currentLanguagePrimitiveType;
+	static Set<String> currentLanguagePrimitiveType;
 
 	/**
 	 * 
 	 * @param null
 	 * @return Set
 	 */
-	public static Set getCurrentLanguagePrimitiveType() {
+	public static Set<String> getCurrentLanguagePrimitiveType() {
 		return currentLanguagePrimitiveType;
 	}
 

@@ -60,7 +60,11 @@ public class TempleParam extends Param {
 		} else {
 			if ("class".equals(result[0])) {
 				paramName = result[result.length - 1];
-				basicModelEditor.createTemplateParameter(((IClass) parent), paramName, (IClass) null, defValObj);
+				try {
+                    basicModelEditor.createTemplateParameter(((IClass) parent), paramName, (IClass) null, defValObj);
+                } catch (InvalidEditingException e) {
+                    // do nothing
+                }
 			}
 		}
 		return parent;

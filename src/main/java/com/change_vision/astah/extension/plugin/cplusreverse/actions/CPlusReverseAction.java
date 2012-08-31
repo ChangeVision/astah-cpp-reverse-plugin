@@ -1,6 +1,7 @@
 package com.change_vision.astah.extension.plugin.cplusreverse.actions;
 
 import java.io.IOException;
+import java.util.Properties;
 
 import javax.swing.JFrame;
 
@@ -16,6 +17,8 @@ import com.change_vision.jude.api.inf.exception.ProjectLockedException;
 import com.change_vision.jude.api.inf.exception.ProjectNotFoundException;
 import com.change_vision.jude.api.inf.project.ProjectAccessor;
 import com.change_vision.jude.api.inf.project.ProjectAccessorFactory;
+import com.change_vision.jude.api.inf.system.SystemPropertyAccessor;
+import com.change_vision.jude.api.inf.system.SystemPropertyAccessorFactory;
 import com.change_vision.jude.api.inf.ui.IPluginActionDelegate;
 import com.change_vision.jude.api.inf.ui.IWindow;
 import com.change_vision.jude.api.inf.view.IViewManager;
@@ -25,6 +28,19 @@ public class CPlusReverseAction implements IPluginActionDelegate {
 	private static final Logger logger = LoggerFactory.getLogger(CPlusReverseAction.class);
 
 	public Object run(IWindow window) throws UnExpectedException {
+	    try {
+            SystemPropertyAccessor systemPropertyAccessor = SystemPropertyAccessorFactory.getSystemPropertyAccessor();
+            Properties systemProperties = systemPropertyAccessor.getSystemProperties();
+            for(Object o : systemProperties.keySet()) {
+                String key = (String) o;
+                System.out.println(String.format("key:%s, value:%s", key,
+                        systemProperties.getProperty(key)));
+            }
+        } catch (ClassNotFoundException e1) {
+            e1.printStackTrace();
+        }
+	    
+	    
 		try {
 			ProjectAccessor prjAccessor = ProjectAccessorFactory.getProjectAccessor();
 			if ("no_title".equals(prjAccessor.getProjectPath())) {
