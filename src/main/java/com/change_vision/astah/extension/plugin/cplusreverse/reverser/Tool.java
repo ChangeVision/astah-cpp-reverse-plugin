@@ -830,6 +830,9 @@ public class Tool {
         }
         String head = typeString.substring(0, beginIndex).trim();
         String endChar = typeString.substring(endIndex + 1).trim();
+        if(endIndex - (beginIndex + 1) <= 0) {
+        	return typeString;
+        }
         String[] contents = typeString.substring(beginIndex + 1, endIndex).split(",");
         String cType = "";
         head = Tool.filterInvalidChar(head);
