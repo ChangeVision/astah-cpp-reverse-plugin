@@ -47,20 +47,19 @@ public class MemberCPlus extends Member {
     void dealOperationKeyword(BasicModelEditor basicModelEditor, Set<String> keywords, IOperation fun)
             throws InvalidEditingException {
         if (keywords.contains(CONST)) {
-            // fun.setLeaf(true);//until 5.4
-            basicModelEditor.createTaggedValue(fun, "jude.c_plus.const", "true");
+			this.createTaggedValue(basicModelEditor, fun, "jude.c_plus.const", "true");
         }
         if (KEYWORD_VIRTUAL.equals(this.getVirt()) || KEYWORD_PURE_VIRTUAL.equals(this.getVirt())) {
-            basicModelEditor.createTaggedValue(fun, "jude.c_plus.virtual", "true");
+			this.createTaggedValue(basicModelEditor, fun, "jude.c_plus.virtual", "true");
         }
         if ("yes".equals(this.getExplicit())) {
-            basicModelEditor.createTaggedValue(fun, "jude.c_plus.explicit", "true");
+			this.createTaggedValue(basicModelEditor, fun, "jude.c_plus.explicit", "true");
         }
         if ("yes".equals(this.getInline())) {
-            basicModelEditor.createTaggedValue(fun, "jude.c_plus.inline", "true");
+			this.createTaggedValue(basicModelEditor, fun, "jude.c_plus.inline", "true");
         }
         if (keywords.contains(KEYWORD_FRIEDN)) {
-            basicModelEditor.createTaggedValue(fun, "jude.c_plus.friend", "true");
+			this.createTaggedValue(basicModelEditor, fun, "jude.c_plus.friend", "true");
         }
         if (keywords.contains(AND)) {
             fun.setTypeModifier(AND);
@@ -70,6 +69,13 @@ public class MemberCPlus extends Member {
             fun.setTypeModifier(STAR);
         }
     }
+    
+	private void createTaggedValue(BasicModelEditor basicModelEditor, IOperation fun, String key, String value) throws InvalidEditingException {
+		String oldValue = fun.getTaggedValue(key);
+		if (oldValue == null || "".equals(oldValue)) {
+			basicModelEditor.createTaggedValue(fun, key, value);
+		}
+	}
 
     @Override
     void dealAttributeKeywords(BasicModelEditor basicModelEditor, Set<String> keywords, IAttribute attr)
