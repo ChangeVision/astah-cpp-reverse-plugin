@@ -1,7 +1,6 @@
 package com.change_vision.astah.extension.plugin.cplusreverse.util;
 
 import java.io.File;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -16,13 +15,13 @@ import org.apache.commons.lang.SystemUtils;
 public class ConfigUtil {
 	public static final String FILE_NAME = "astah_plugin_cplusreverse.properties";
 	public static final String DEFAULT_CPLUSE_XML_DIR_KEY = "default_cpluserevese_xml_directory";
-	
+
 	private static final String FILE_PATH;
 	private static Properties config;
-	
+
 	static {
 		config = new Properties();
-		
+
 		StringBuilder builder = new StringBuilder();
 		builder.append(System.getProperty("user.home"));
 		builder.append(File.separator);
@@ -31,9 +30,9 @@ public class ConfigUtil {
 		builder.append("professional");
 		builder.append(File.separator);
 		builder.append(FILE_NAME);
-		
+
 		FILE_PATH = builder.toString();
-		
+
 		load();
 	}
 
@@ -59,11 +58,14 @@ public class ConfigUtil {
 		} catch (IOException e) {
 		} finally {
 			if (stream != null) {
-				try { stream.close(); } catch (IOException e) {}
+				try {
+					stream.close();
+				} catch (IOException e) {
+				}
 			}
 		}
 	}
-	
+
 	public static void store() {
 		OutputStream stream = null;
 		try {
@@ -73,7 +75,10 @@ public class ConfigUtil {
 		} catch (IOException e) {
 		} finally {
 			if (stream != null) {
-				try { stream.close(); } catch (IOException e) {}
+				try {
+					stream.close();
+				} catch (IOException e) {
+				}
 			}
 		}
 	}

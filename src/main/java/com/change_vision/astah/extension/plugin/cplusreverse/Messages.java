@@ -9,12 +9,10 @@ import com.change_vision.jude.api.inf.ui.IMessageProvider;
 
 /**
  * メッセージリソースを扱うクラスです
- * <p/>
  * 
- * com/change_vision/astah/extension/plugin/cplusereverse/messages.
- * propertesプロパティファイルからメッセージを取得します 
+ * com/change_vision/astah/extension/plugin/cplusereverse/messages.propertesプロパティファイルからメッセージを取得します
  */
-public class Messages implements IMessageProvider{
+public class Messages implements IMessageProvider {
 
 	/**
 	 * デフォルトのプロパティファイルの配置場所
@@ -24,14 +22,12 @@ public class Messages implements IMessageProvider{
 	/**
 	 * メッセージリソースバンドル
 	 */
-	private static ResourceBundle INTERNAL_MESSAGES = ResourceBundle.getBundle(DEFAULT_BUNDLE, Locale.getDefault(),
-			Messages.class.getClassLoader());
+	private static ResourceBundle INTERNAL_MESSAGES = ResourceBundle.getBundle(DEFAULT_BUNDLE, Locale.getDefault(), Messages.class.getClassLoader());
 
 	/**
 	 * コンストラクタ
 	 */
 	public Messages() {
-
 	}
 
 	/**

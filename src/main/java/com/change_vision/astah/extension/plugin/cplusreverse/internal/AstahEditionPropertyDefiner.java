@@ -1,9 +1,8 @@
 package com.change_vision.astah.extension.plugin.cplusreverse.internal;
 
-import com.change_vision.astah.extension.plugin.cplusreverse.AstahAPIHandler;
-
 import ch.qos.logback.core.PropertyDefinerBase;
 
+import com.change_vision.astah.extension.plugin.cplusreverse.AstahAPIHandler;
 
 public class AstahEditionPropertyDefiner extends PropertyDefinerBase {
 

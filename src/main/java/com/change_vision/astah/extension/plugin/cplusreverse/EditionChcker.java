@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import com.change_vision.astah.extension.plugin.cplusreverse.view.AlertEditionDialog;
 
 public class EditionChcker {
-	
+
 	private AstahAPIHandler handler = new AstahAPIHandler();
 	private static final Set<String> targetEditon = new HashSet<String>();
 	static {
@@ -23,22 +23,21 @@ public class EditionChcker {
 
 	public boolean hasError() {
 		String edition = handler.getEdition();
-		if(targetEditon.contains(edition))
+		if (targetEditon.contains(edition))
 			return false;
 		logger.info(edition);
 		showEndOfPeriodDialog();
 		return true;
 	}
-	
+
 	private void showEndOfPeriodDialog() {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				JFrame frame = handler.getMainFrame();
 				AlertEditionDialog dialog = new AlertEditionDialog(frame);
 				dialog.setModal(true);
-				dialog.setVisible(true);				
+				dialog.setVisible(true);
 			}
 		});
 	}
-
 }
