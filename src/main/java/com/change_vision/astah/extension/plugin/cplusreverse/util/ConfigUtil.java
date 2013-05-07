@@ -9,8 +9,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 
 public class ConfigUtil {
 	public static final String FILE_NAME = "astah_plugin_cplusreverse.properties";

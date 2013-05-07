@@ -1,21 +1,10 @@
 <configuration>
 
-    <define name="astah.edition" class="com.change_vision.astah.extension.plugin.cplusreverse.internal.AstahEditionPropertyDefiner">
-    </define>
+	<define name="astah.edition" class="com.change_vision.astah.extension.plugin.cplusreverse.internal.AstahEditionPropertyDefiner">
+	</define>
 
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>
-                %d %-5p %c %X - %m%n
-            </pattern>
-        </encoder>
-    </appender>
-
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+	<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
 		<File>${user.home}/.astah/${astah.edition}/cplusreverse.log</File>
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-          	<level>INFO</level>
-    	</filter>
 		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
 			<FileNamePattern>${user.home}/.astah/${astah.edition}/cplusreverse.%i.log.zip</FileNamePattern>
 			<MinIndex>1</MinIndex>
@@ -26,12 +15,11 @@
 		</triggeringPolicy>
 		<encoder>
 			<charset>UTF-8</charset>
-			<Pattern>%d %-5p %c %X - %m%n</Pattern>
+			<Pattern>%d [%thread] %-5p %c{30} %X - %m%n</Pattern>
 		</encoder>
 	</appender>
-	
-	<root level="error">
-        <appender-ref ref="FILE" />
-		<!-- <appender-ref ref="STDOUT" /> -->
+
+	<root level="debug">
+		<appender-ref ref="FILE" />
 	</root>
 </configuration>

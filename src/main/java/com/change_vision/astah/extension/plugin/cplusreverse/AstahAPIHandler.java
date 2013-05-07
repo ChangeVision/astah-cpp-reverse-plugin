@@ -2,13 +2,17 @@ package com.change_vision.astah.extension.plugin.cplusreverse;
 
 import javax.swing.JFrame;
 
+import com.change_vision.jude.api.inf.AstahAPI;
 import com.change_vision.jude.api.inf.project.ProjectAccessor;
-import com.change_vision.jude.api.inf.project.ProjectAccessorFactory;
 
 public class AstahAPIHandler {
 
 	public JFrame getMainFrame() {
-		return getProjectAccessor().getViewManager().getMainFrame();
+		try {
+			return getProjectAccessor().getViewManager().getMainFrame();
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	public String getEdition() {
@@ -18,7 +22,7 @@ public class AstahAPIHandler {
 	private ProjectAccessor getProjectAccessor() {
 		ProjectAccessor projectAccessor = null;
 		try {
-			projectAccessor = ProjectAccessorFactory.getProjectAccessor();
+			projectAccessor = AstahAPI.getAstahAPI().getProjectAccessor();
 		} catch (ClassNotFoundException e) {
 			throw new IllegalStateException(e);
 		}

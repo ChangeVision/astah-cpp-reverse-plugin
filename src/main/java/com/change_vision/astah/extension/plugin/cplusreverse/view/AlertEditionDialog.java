@@ -21,7 +21,7 @@ import com.change_vision.astah.extension.plugin.cplusreverse.Messages;
 
 public class AlertEditionDialog extends JDialog {
 
-	private static final String MIME_TYPE = "text/html"; //$NON-NLS-1$
+	private static final String MIME_TYPE = "text/html";
 
 	private final class HyperLinkHandler implements HyperlinkListener {
 		@Override
@@ -32,7 +32,7 @@ public class AlertEditionDialog extends JDialog {
 				try {
 					dp.browse(url.toURI());
 				} catch (Exception ex) {
-					logger.error(Messages.getMessage("AlertEditionDialog.error_message"), ex); //$NON-NLS-1$
+					logger.error(Messages.getMessage("AlertEditionDialog.error_message"), ex);
 				}
 			}
 		}
@@ -45,14 +45,14 @@ public class AlertEditionDialog extends JDialog {
 
 	public AlertEditionDialog(Frame owner) {
 		super(owner);
-		logger.trace(Messages.getMessage("AlertEditionDialog.trace_message")); //$NON-NLS-1$
-		setTitle(Messages.getMessage("AlertEditionDialog.title")); //$NON-NLS-1$
+		logger.trace(Messages.getMessage("AlertEditionDialog.trace_message"));
+		setTitle(Messages.getMessage("AlertEditionDialog.title"));
 		setSize(new Dimension(280, 150));
 		setLocationRelativeTo(owner);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
 		Container c = getContentPane();
-		pane = new JEditorPane(MIME_TYPE, Messages.getMessage("AlertEditionDialog.main_message")); //$NON-NLS-1$
+		pane = new JEditorPane(MIME_TYPE, Messages.getMessage("AlertEditionDialog.main_message"));
 		pane.setEditable(false);
 		pane.setBackground(getBackground());
 		pane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);

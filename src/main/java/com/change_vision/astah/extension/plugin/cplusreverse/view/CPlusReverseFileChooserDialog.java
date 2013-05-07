@@ -8,6 +8,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import java.io.UTFDataFormatException;
 import java.net.MalformedURLException;
@@ -23,18 +24,21 @@ import javax.swing.JPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.change_vision.astah.extension.plugin.common.AstahModelUtil;
 import com.change_vision.astah.extension.plugin.cplusreverse.Activator;
 import com.change_vision.astah.extension.plugin.cplusreverse.Messages;
-import com.change_vision.astah.extension.plugin.cplusreverse.exception.IndexXmlNotFoundException;
-import com.change_vision.astah.extension.plugin.cplusreverse.reverser.DoxygenXmlParser;
 import com.change_vision.astah.extension.plugin.cplusreverse.util.ConfigUtil;
+import com.change_vision.astah.extension.plugin.exception.IndexXmlNotFoundException;
+import com.change_vision.astah.extension.plugin.reverser.Creator;
+import com.change_vision.astah.extension.plugin.reverser.DoxygenXmlParser;
+import com.change_vision.astah.extension.plugin.reverser.TypeUtil;
+import com.change_vision.jude.api.inf.AstahAPI;
 import com.change_vision.jude.api.inf.editor.TransactionManager;
 import com.change_vision.jude.api.inf.exception.InvalidEditingException;
 import com.change_vision.jude.api.inf.exception.LicenseNotFoundException;
 import com.change_vision.jude.api.inf.exception.ProjectLockedException;
 import com.change_vision.jude.api.inf.exception.ProjectNotFoundException;
 import com.change_vision.jude.api.inf.project.ProjectAccessor;
-import com.change_vision.jude.api.inf.project.ProjectAccessorFactory;
 import com.change_vision.jude.api.inf.project.ProjectEvent;
 import com.change_vision.jude.api.inf.project.ProjectEventListener;
 import com.change_vision.jude.api.inf.ui.IMessageDialogHandler;
@@ -52,6 +56,7 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 	private JButton reverseButton;
 	private CPlusReverseFileChooserPanel fileChooserPanel;
 	private String resultTempModel = null;
+	private ProjectAccessor projectAccessor;
 
 	public CPlusReverseFileChooserDialog(JFrame window) {
 		super(window, true);
@@ -60,6 +65,12 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 		createContents();
 		setSize(WIDTH, HEIGHT);
 		setLocationRelativeTo(window);
+
+		try {
+			projectAccessor = AstahAPI.getAstahAPI().getProjectAccessor();
+		} catch (ClassNotFoundException e) {
+			logger.error(e.getMessage(), e);
+		}
 	}
 
 	private void createContents() {
@@ -109,19 +120,32 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 	}
 
 	private void parseXMLandEasyMerge() {
-		DoxygenXmlParser dxp = new DoxygenXmlParser();
 		try {
 			String doxygenXml = fileChooserPanel.getXmlFileChooseText();
-			if (!("".equals(doxygenXml.trim()))) {
-				ProjectAccessor prjAccessor = ProjectAccessorFactory.getProjectAccessor();
-				String iCurrentProject = prjAccessor.getProjectPath();
+			if (null != doxygenXml) {
+				doxygenXml = doxygenXml.trim();
+			}
+			if (!("".equals(doxygenXml))) {
+				String iCurrentProject = projectAccessor.getProjectPath();
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				resultTempModel = DoxygenXmlParser.parser(doxygenXml);
-				setVisible(false);
 
+				DoxygenXmlParser doxygenXmlParser = new DoxygenXmlParser();
+				doxygenXmlParser.setProjectAccessor(projectAccessor);
+
+				Creator creator = createCreator(doxygenXml);
+				doxygenXmlParser.setCreator(creator);
+				// begin transaction
+				doxygenXmlParser.initProject();
+				TransactionManager.beginTransaction();
+				doxygenXmlParser.parser(doxygenXml);
+				// end transaction
+				TransactionManager.endTransaction();
+				resultTempModel = doxygenXmlParser.saveProject();
+
+				setVisible(false);
 				ConfigUtil.saveCPlusXmlPath(doxygenXml);
-				prjAccessor.addProjectEventListener(this);
-				prjAccessor.open(iCurrentProject);
+				projectAccessor.addProjectEventListener(this);
+				projectAccessor.open(iCurrentProject);
 			} else {
 				util.showWarningMessage(getMainFrame(), Messages.getMessage("reverse_dialog.xml_folder_input_message"));
 			}
@@ -133,39 +157,12 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 			util.showWarningMessage(getMainFrame(), Messages.getMessage("reverse_dialog.xml_folder_input_message"));
 			logger.error(e1.getMessage(), e1);
 		} catch (UTFDataFormatException e1) {
-			String messageStr = "";
-			String errorLocationFile = dxp.getErrorLocationFile();
-			if (errorLocationFile != null) {
-				int errorLocationLine = dxp.getErrorLocationLine();
-				String errorLocationBodyFile = dxp.getErrorLocationBodyFile();
-				int errorLocationBodyStart = dxp.getErrorLocationBodyStart();
-				int errorLocationBodyEnd = dxp.getErrorLocationBodyEnd();
-				String line_separator = System.getProperty("line.separator");
-				messageStr = Messages.getMessage("doxygen_utf_exception_detail.error_message") + line_separator + "File:" + errorLocationFile
-						+ " Line:" + errorLocationLine + line_separator + "Body File:" + errorLocationBodyFile + " Start:" + errorLocationBodyStart
-						+ " End:" + errorLocationBodyEnd;
-			} else {
-				messageStr = Messages.getMessage("doxygen_utf_exception.error_message");
-			}
-			//
+			String messageStr = Messages.getMessage("doxygen_utf_exception.error_message");
 			logger.error(messageStr);
 			logger.error(e1.getMessage(), e1);
 			util.showWarningMessage(getMainFrame(), messageStr);
 		} catch (Throwable e1) {
-			String messageStr = "";
-			String errorLocationFile = dxp.getErrorLocationFile();
-			if (errorLocationFile != null) {
-				int errorLocationLine = dxp.getErrorLocationLine();
-				String errorLocationBodyFile = dxp.getErrorLocationBodyFile();
-				int errorLocationBodyStart = dxp.getErrorLocationBodyStart();
-				int errorLocationBodyEnd = dxp.getErrorLocationBodyEnd();
-				String line_separator = System.getProperty("line.separator");
-				messageStr = Messages.getMessage("doxygen_parse_exception_detail.error_message") + line_separator + "File:" + errorLocationFile
-						+ " Line:" + errorLocationLine + line_separator + "Body File:" + errorLocationBodyFile + " Start:" + errorLocationBodyStart
-						+ " End:" + errorLocationBodyEnd;
-			} else {
-				messageStr = Messages.getMessage("doxygen_parse_exception.error_message");
-			}
+			String messageStr = Messages.getMessage("doxygen_parse_exception.error_message");
 			logger.error(messageStr);
 			logger.error(e1.getMessage(), e1);
 			util.showWarningMessage(getMainFrame(), messageStr);
@@ -177,18 +174,30 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 		}
 	}
 
+	protected Creator createCreator(String doxygenXml) throws InvalidEditingException {
+		Creator creator = new Creator();
+		creator.setProjectAccessor(projectAccessor);
+		creator.setBasicModelEditor(projectAccessor.getModelEditorFactory().getBasicModelEditor());
+		AstahModelUtil astahModelUtil = new AstahModelUtil();
+		creator.setAstahModelUtil(astahModelUtil);
+		TypeUtil typeUtil = new TypeUtil();
+		typeUtil.setXmlDir(new File(doxygenXml));
+		typeUtil.setAstahModelUtil(astahModelUtil);
+		creator.setTypeUtil(typeUtil);
+		return creator;
+	}
+
 	// TODO AstahAPIHandlerと全く同じ内容の処理？
 	private JFrame getMainFrame() {
 		JFrame parent = null;
 		try {
-			ProjectAccessor projectAccessor = ProjectAccessorFactory.getProjectAccessor();
 			if (projectAccessor == null)
 				return null;
 			IViewManager viewManager = projectAccessor.getViewManager();
 			if (viewManager == null)
 				return null;
 			parent = viewManager.getMainFrame();
-		} catch (ClassNotFoundException ex) {
+		} catch (Exception e) {
 			return null;
 		}
 		return parent;
@@ -251,22 +260,18 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 
 	@Override
 	public void projectOpened(ProjectEvent arg0) {
-		ProjectAccessor prjAccessor = null;
 		try {
-			prjAccessor = ProjectAccessorFactory.getProjectAccessor();
 			if (resultTempModel != null) {
-				prjAccessor.easyMerge(resultTempModel, true);
+				projectAccessor.easyMerge(resultTempModel, true);
 			}
 			resultTempModel = null;
-		} catch (ClassNotFoundException e) {
-			logger.error(e.getMessage(), e);
 		} catch (ProjectNotFoundException e) {
 			logger.error(e.getMessage(), e);
 		} catch (InvalidEditingException e) {
 			logger.error(e.getMessage(), e);
 		} finally {
-			if (prjAccessor != null) {
-				prjAccessor.removeProjectEventListener(this);
+			if (projectAccessor != null) {
+				projectAccessor.removeProjectEventListener(this);
 			}
 		}
 	}
