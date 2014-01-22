@@ -49,6 +49,7 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 	private static final Logger logger = LoggerFactory.getLogger(CPlusReverseFileChooserDialog.class);
 
 	private static final String NAME = "cplus_reverse";
+	private static final String ENTER = "\n";
 	private static int WIDTH = 520;
 	private static int HEIGHT = 120;
 	private IMessageDialogHandler util = Activator.getMessageHandler();
@@ -157,15 +158,15 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 			util.showWarningMessage(getMainFrame(), Messages.getMessage("reverse_dialog.xml_folder_input_message"));
 			logger.error(e1.getMessage(), e1);
 		} catch (UTFDataFormatException e1) {
-			String messageStr = Messages.getMessage("doxygen_utf_exception.error_message");
+			String messageStr = Messages.getMessage("doxygen_utf_exception_detail.error_message");
 			logger.error(messageStr);
 			logger.error(e1.getMessage(), e1);
-			util.showWarningMessage(getMainFrame(), messageStr);
+            util.showWarningMessage(getMainFrame(), getMessageString(messageStr, e1.getMessage()));
 		} catch (Throwable e1) {
-			String messageStr = Messages.getMessage("doxygen_parse_exception.error_message");
+			String messageStr = Messages.getMessage("doxygen_parse_exception_detail.error_message");
 			logger.error(messageStr);
 			logger.error(e1.getMessage(), e1);
-			util.showWarningMessage(getMainFrame(), messageStr);
+            util.showWarningMessage(getMainFrame(), getMessageString(messageStr, e1.getMessage()));
 		} finally {
 			if (TransactionManager.isInTransaction()) {
 				TransactionManager.abortTransaction();
@@ -174,7 +175,7 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 		}
 	}
 
-	protected Creator createCreator(String doxygenXml) throws InvalidEditingException {
+    protected Creator createCreator(String doxygenXml) throws InvalidEditingException {
 		Creator creator = new Creator();
 		creator.setProjectAccessor(projectAccessor);
 		creator.setBasicModelEditor(projectAccessor.getModelEditorFactory().getBasicModelEditor());
@@ -275,4 +276,12 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 			}
 		}
 	}
+	
+    private String getMessageString(String preposition, String postposition) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(preposition);
+        sb.append(ENTER);
+        sb.append(postposition);
+        return sb.toString();
+    }
 }
