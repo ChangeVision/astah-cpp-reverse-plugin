@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -19,7 +20,9 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,21 +88,7 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 		JPanel sourthContentPanel = new JPanel(new BorderLayout());
 
 		JPanel helpPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		helpPanel.add(new HelpButton(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Desktop desktop = Desktop.getDesktop();
-				try {
-					URL url = new URL(Messages.getMessage("help.url"));
-					desktop.browse(url.toURI());
-				} catch (MalformedURLException e1) {
-					logger.error(e1.getMessage(), e1);
-				} catch (IOException e1) {
-					logger.error(e1.getMessage(), e1);
-				} catch (URISyntaxException e1) {
-					logger.error(e1.getMessage(), e1);
-				}
-			}
-		}));
+        helpPanel.add(getHelpButton());
 		sourthContentPanel.add(helpPanel, BorderLayout.WEST);
 
 		JPanel reversePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -166,7 +155,8 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 			String messageStr = Messages.getMessage("doxygen_parse_exception_detail.error_message");
 			logger.error(messageStr);
 			logger.error(e1.getMessage(), e1);
-            util.showWarningMessage(getMainFrame(), getMessageString(messageStr, e1.getMessage()));
+            JOptionPane.showOptionDialog(getMainFrame(), getMessageString(messageStr, e1.getMessage()), "Warning",
+                    JOptionPane.WARNING_MESSAGE, JOptionPane.WARNING_MESSAGE, null, getOptions(), null);
 		} finally {
 			if (TransactionManager.isInTransaction()) {
 				TransactionManager.abortTransaction();
@@ -283,5 +273,34 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
         sb.append(ENTER);
         sb.append(postposition);
         return sb.toString();
+    }
+    
+    private Object[] getOptions() {
+        HelpButton button = getHelpButton();
+        Object obj = UIManager.get("OptionPane.buttonFont", getLocale());
+        if (obj instanceof Font) {
+            Font font = (Font) obj;
+            button.setFont(font);
+        }
+        return new Object[] { Messages.getMessage("error.message.ok.button.label"), button };
+    }
+
+    private HelpButton getHelpButton() {
+        HelpButton button = new HelpButton(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Desktop desktop = Desktop.getDesktop();
+                try {
+                    URL url = new URL(Messages.getMessage("help.url"));
+                    desktop.browse(url.toURI());
+                } catch (MalformedURLException e1) {
+                    logger.error(e1.getMessage(), e1);
+                } catch (IOException e1) {
+                    logger.error(e1.getMessage(), e1);
+                } catch (URISyntaxException e1) {
+                    logger.error(e1.getMessage(), e1);
+                }
+            }
+        });
+        return button;
     }
 }
