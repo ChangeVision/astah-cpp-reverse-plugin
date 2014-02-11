@@ -88,7 +88,7 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 		JPanel sourthContentPanel = new JPanel(new BorderLayout());
 
 		JPanel helpPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        helpPanel.add(getHelpButton());
+        helpPanel.add(createHelpButton());
 		sourthContentPanel.add(helpPanel, BorderLayout.WEST);
 
 		JPanel reversePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -276,7 +276,7 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
     }
     
     private Object[] getOptions() {
-        HelpButton button = getHelpButton();
+        HelpButton button = createHelpButton();
         Object obj = UIManager.get("OptionPane.buttonFont", getLocale());
         if (obj instanceof Font) {
             Font font = (Font) obj;
@@ -285,8 +285,8 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
         return new Object[] { Messages.getMessage("error.message.ok.button.label"), button };
     }
 
-    private HelpButton getHelpButton() {
-        HelpButton button = new HelpButton(new ActionListener() {
+    private HelpButton createHelpButton() {
+        return new HelpButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Desktop desktop = Desktop.getDesktop();
                 try {
@@ -301,6 +301,5 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
                 }
             }
         });
-        return button;
     }
 }
