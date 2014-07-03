@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -19,7 +20,9 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +53,7 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 	private static final Logger logger = LoggerFactory.getLogger(CPlusReverseFileChooserDialog.class);
 
 	private static final String NAME = "cplus_reverse";
+	private static final String ENTER = "\n";
 	private static int WIDTH = 520;
 	private static int HEIGHT = 120;
 	private IMessageDialogHandler util = Activator.getMessageHandler();
@@ -85,21 +89,7 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 		JPanel sourthContentPanel = new JPanel(new BorderLayout());
 
 		JPanel helpPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		helpPanel.add(new HelpButton(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Desktop desktop = Desktop.getDesktop();
-				try {
-					URL url = new URL(Messages.getMessage("help.url"));
-					desktop.browse(url.toURI());
-				} catch (MalformedURLException e1) {
-					logger.error(e1.getMessage(), e1);
-				} catch (IOException e1) {
-					logger.error(e1.getMessage(), e1);
-				} catch (URISyntaxException e1) {
-					logger.error(e1.getMessage(), e1);
-				}
-			}
-		}));
+        helpPanel.add(createHelpButton());
 		sourthContentPanel.add(helpPanel, BorderLayout.WEST);
 
 		JPanel reversePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -158,7 +148,7 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 			util.showWarningMessage(getMainFrame(), Messages.getMessage("reverse_dialog.xml_folder_input_message"));
 			logger.error(e1.getMessage(), e1);
 		} catch (UTFDataFormatException e1) {
-			String messageStr = Messages.getMessage("doxygen_utf_exception.error_message");
+			String messageStr = Messages.getMessage("doxygen_utf_exception_detail.error_message");
 			logger.error(messageStr);
 			logger.error(e1.getMessage(), e1);
 			util.showWarningMessage(getMainFrame(), messageStr);
@@ -166,10 +156,11 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 			util.showWarningMessage(getMainFrame(), Messages.getMessage("doxygen_encoding_exception.error_message",e1.getMessage()));
 			logger.error(e1.getMessage(), e1);
 		} catch (Throwable e1) {
-			String messageStr = Messages.getMessage("doxygen_parse_exception.error_message");
+			String messageStr = Messages.getMessage("doxygen_parse_exception_detail.error_message");
 			logger.error(messageStr);
 			logger.error(e1.getMessage(), e1);
-			util.showWarningMessage(getMainFrame(), messageStr);
+            JOptionPane.showOptionDialog(getMainFrame(), getMessageString(messageStr, e1.getMessage()), "Warning",
+                    JOptionPane.WARNING_MESSAGE, JOptionPane.WARNING_MESSAGE, null, getOptions(), null);
 		} finally {
 			if (TransactionManager.isInTransaction()) {
 				TransactionManager.abortTransaction();
@@ -178,7 +169,7 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 		}
 	}
 
-	protected Creator createCreator(String doxygenXml) throws InvalidEditingException {
+    protected Creator createCreator(String doxygenXml) throws InvalidEditingException {
 		Creator creator = new Creator();
 		creator.setProjectAccessor(projectAccessor);
 		creator.setBasicModelEditor(projectAccessor.getModelEditorFactory().getBasicModelEditor());
@@ -279,4 +270,40 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 			}
 		}
 	}
+	
+    private String getMessageString(String preposition, String postposition) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(preposition);
+        sb.append(ENTER);
+        sb.append(postposition);
+        return sb.toString();
+    }
+    
+    private Object[] getOptions() {
+        HelpButton button = createHelpButton();
+        Object obj = UIManager.get("OptionPane.buttonFont", getLocale());
+        if (obj instanceof Font) {
+            Font font = (Font) obj;
+            button.setFont(font);
+        }
+        return new Object[] { Messages.getMessage("error.message.ok.button.label"), button };
+    }
+
+    private HelpButton createHelpButton() {
+        return new HelpButton(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Desktop desktop = Desktop.getDesktop();
+                try {
+                    URL url = new URL(Messages.getMessage("help.url"));
+                    desktop.browse(url.toURI());
+                } catch (MalformedURLException e1) {
+                    logger.error(e1.getMessage(), e1);
+                } catch (IOException e1) {
+                    logger.error(e1.getMessage(), e1);
+                } catch (URISyntaxException e1) {
+                    logger.error(e1.getMessage(), e1);
+                }
+            }
+        });
+    }
 }
