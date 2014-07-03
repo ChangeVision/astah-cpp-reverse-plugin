@@ -32,6 +32,7 @@ import com.change_vision.astah.extension.plugin.cplusreverse.Activator;
 import com.change_vision.astah.extension.plugin.cplusreverse.Messages;
 import com.change_vision.astah.extension.plugin.cplusreverse.util.ConfigUtil;
 import com.change_vision.astah.extension.plugin.exception.IndexXmlNotFoundException;
+import com.change_vision.astah.extension.plugin.exception.XmlParsingException;
 import com.change_vision.astah.extension.plugin.reverser.Creator;
 import com.change_vision.astah.extension.plugin.reverser.DoxygenXmlParser;
 import com.change_vision.astah.extension.plugin.reverser.TypeUtil;
@@ -150,7 +151,10 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 			String messageStr = Messages.getMessage("doxygen_utf_exception_detail.error_message");
 			logger.error(messageStr);
 			logger.error(e1.getMessage(), e1);
-            util.showWarningMessage(getMainFrame(), getMessageString(messageStr, e1.getMessage()));
+			util.showWarningMessage(getMainFrame(), messageStr);
+		} catch (XmlParsingException e1) {
+			util.showWarningMessage(getMainFrame(), Messages.getMessage("doxygen_encoding_exception.error_message",e1.getMessage()));
+			logger.error(e1.getMessage(), e1);
 		} catch (Throwable e1) {
 			String messageStr = Messages.getMessage("doxygen_parse_exception_detail.error_message");
 			logger.error(messageStr);
