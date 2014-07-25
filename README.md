@@ -7,7 +7,7 @@ Version
 
 Available for
 ------------
-Astah UML, Astah Professional 6.5.x or later
+Astah UML, Astah Professional 6.7.x or later
 
 Description
 ------------
