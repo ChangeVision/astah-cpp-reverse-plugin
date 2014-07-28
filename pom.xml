@@ -294,7 +294,7 @@
 		<dependency>
 			<groupId>com.change_vision.astah.extension.plugin</groupId>
 			<artifactId>astah-reverse-jaxb-doxygen</artifactId>
-			<version>1.0.2</version>
+			<version>1.0.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
