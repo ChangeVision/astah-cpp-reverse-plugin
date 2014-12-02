@@ -153,7 +153,12 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 			logger.error(e1.getMessage(), e1);
 			util.showWarningMessage(getMainFrame(), messageStr);
 		} catch (XmlParsingException e1) {
-			util.showWarningMessage(getMainFrame(), Messages.getMessage("doxygen_encoding_exception.error_message",e1.getMessage()));
+            String message = Messages.getMessage("doxygen_encoding_exception.error_message",
+                    e1.getMessage());
+            Object[] options = new Object[] { createDetailButton(),
+                    Messages.getMessage("error.message.close.button.label") };
+            JOptionPane.showOptionDialog(getMainFrame(), message, "Warning",
+                    JOptionPane.WARNING_MESSAGE, JOptionPane.WARNING_MESSAGE, null, options, null);
 			logger.error(e1.getMessage(), e1);
 		} catch (Throwable e1) {
 			String messageStr = Messages.getMessage("doxygen_parse_exception_detail.error_message");
@@ -290,11 +295,34 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
     }
 
     private HelpButton createHelpButton() {
-        return new HelpButton(new ActionListener() {
+        return new HelpButton(createActionListener("help.url"));
+    }
+
+    private JButton createButton(String name, String Text, ActionListener listener) {
+        JButton button = new JButton();
+        button.setName(name);
+        button.setText(Messages.getMessage(Text));
+        button.addActionListener(listener);
+        Object obj = UIManager.get("OptionPane.buttonFont", getLocale());
+        if (obj instanceof Font) {
+            Font font = (Font) obj;
+            button.setFont(font);
+        }
+        return button;
+    }
+
+    private JButton createDetailButton() {
+        return createButton("doxygen_encoding_exception_error.help",
+                "doxygen_encoding_exception_error_help.button.label",
+                createActionListener("doxygen_encoding_exception_error_help.url"));
+    }
+
+    private ActionListener createActionListener(final String urlKeyString) {
+        return new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Desktop desktop = Desktop.getDesktop();
                 try {
-                    URL url = new URL(Messages.getMessage("help.url"));
+                    URL url = new URL(Messages.getMessage(urlKeyString));
                     desktop.browse(url.toURI());
                 } catch (MalformedURLException e1) {
                     logger.error(e1.getMessage(), e1);
@@ -304,6 +332,6 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
                     logger.error(e1.getMessage(), e1);
                 }
             }
-        });
+        };
     }
 }
