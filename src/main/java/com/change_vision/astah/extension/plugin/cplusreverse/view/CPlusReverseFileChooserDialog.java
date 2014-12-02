@@ -93,22 +93,33 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 		sourthContentPanel.add(helpPanel, BorderLayout.WEST);
 
 		JPanel reversePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-		reverseButton = new ReverseButton(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				parseXMLandEasyMerge();
-			}
-		});
+        reverseButton = createReverseButton();
 		reversePanel.add(reverseButton);
-		reversePanel.add(new CancelButton(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setVisible(false);
-			}
-		}));
+        reversePanel.add(createCancelButton());
 
 		sourthContentPanel.add(reversePanel, BorderLayout.EAST);
 
 		getContentPane().add(sourthContentPanel);
 	}
+
+    private JButton createReverseButton() {
+        ActionListener listener = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                parseXMLandEasyMerge();
+            }
+        };
+        return createButton("export_dialog.generate", "reverse_dialog.reverse_button.title",
+                listener);
+    }
+
+    private JButton createCancelButton() {
+        ActionListener listener = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                setVisible(false);
+            }
+        };
+        return createButton("export_dialog.cancel", "reverse_dialog.cancel_button.title", listener);
+    }
 
 	private void parseXMLandEasyMerge() {
 		try {
@@ -214,42 +225,6 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 		getContentPane().add(mainContentPanel);
 	}
 
-	class HelpButton extends JButton {
-		private static final long serialVersionUID = 1L;
-
-		static final String NAME = "export_dialog.help";
-
-		private HelpButton(ActionListener listener) {
-			setName(NAME);
-			setText(Messages.getMessage("reverse_dialog.help_button.title"));
-			addActionListener(listener);
-		}
-	}
-
-	class ReverseButton extends JButton {
-		private static final long serialVersionUID = 1L;
-
-		static final String NAME = "export_dialog.generate";
-
-		private ReverseButton(ActionListener listener) {
-			setName(NAME);
-			setText(Messages.getMessage("reverse_dialog.reverse_button.title"));
-			addActionListener(listener);
-		}
-	}
-
-	class CancelButton extends JButton {
-		private static final long serialVersionUID = 1L;
-
-		static final String NAME = "export_dialog.cancel";
-
-		private CancelButton(ActionListener listener) {
-			setName(NAME);
-			setText(Messages.getMessage("reverse_dialog.cancel_button.title"));
-			addActionListener(listener);
-		}
-	}
-
 	@Override
 	public void projectChanged(ProjectEvent arg0) {
 	}
@@ -283,19 +258,17 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
         sb.append(postposition);
         return sb.toString();
     }
-    
+
     private Object[] getOptions() {
-        HelpButton button = createHelpButton();
-        Object obj = UIManager.get("OptionPane.buttonFont", getLocale());
-        if (obj instanceof Font) {
-            Font font = (Font) obj;
-            button.setFont(font);
-        }
-        return new Object[] { Messages.getMessage("error.message.ok.button.label"), button };
+        JButton helpButton = createHelpButton();
+        setFont(helpButton);
+        return new Object[] { Messages.getMessage("error.message.ok.button.label"), helpButton };
     }
 
-    private HelpButton createHelpButton() {
-        return new HelpButton(createActionListener("help.url"));
+    private JButton createHelpButton() {
+        JButton button = createButton("export_dialog.help", "reverse_dialog.help_button.title",
+                createActionListener("help.url"));
+        return button;
     }
 
     private JButton createButton(String name, String Text, ActionListener listener) {
@@ -303,18 +276,23 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
         button.setName(name);
         button.setText(Messages.getMessage(Text));
         button.addActionListener(listener);
+        return button;
+    }
+
+    private JButton createDetailButton() {
+        JButton button = createButton("doxygen_encoding_exception_error.help",
+                "doxygen_encoding_exception_error_help.button.label",
+                createActionListener("doxygen_encoding_exception_error_help.url"));
+        setFont(button);
+        return button;
+    }
+
+    private void setFont(JButton button) {
         Object obj = UIManager.get("OptionPane.buttonFont", getLocale());
         if (obj instanceof Font) {
             Font font = (Font) obj;
             button.setFont(font);
         }
-        return button;
-    }
-
-    private JButton createDetailButton() {
-        return createButton("doxygen_encoding_exception_error.help",
-                "doxygen_encoding_exception_error_help.button.label",
-                createActionListener("doxygen_encoding_exception_error_help.url"));
     }
 
     private ActionListener createActionListener(final String urlKeyString) {
