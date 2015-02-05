@@ -93,33 +93,22 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 		sourthContentPanel.add(helpPanel, BorderLayout.WEST);
 
 		JPanel reversePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        reverseButton = createReverseButton();
+		reverseButton = new ReverseButton(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				parseXMLandEasyMerge();
+			}
+		});
 		reversePanel.add(reverseButton);
-        reversePanel.add(createCancelButton());
+		reversePanel.add(new CancelButton(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setVisible(false);
+			}
+		}));
 
 		sourthContentPanel.add(reversePanel, BorderLayout.EAST);
 
 		getContentPane().add(sourthContentPanel);
 	}
-
-    private JButton createReverseButton() {
-        ActionListener listener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                parseXMLandEasyMerge();
-            }
-        };
-        return createButton("export_dialog.generate", "reverse_dialog.reverse_button.title",
-                listener);
-    }
-
-    private JButton createCancelButton() {
-        ActionListener listener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setVisible(false);
-            }
-        };
-        return createButton("export_dialog.cancel", "reverse_dialog.cancel_button.title", listener);
-    }
 
 	private void parseXMLandEasyMerge() {
 		try {
@@ -164,12 +153,7 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 			logger.error(e1.getMessage(), e1);
 			util.showWarningMessage(getMainFrame(), messageStr);
 		} catch (XmlParsingException e1) {
-            String message = Messages.getMessage("doxygen_encoding_exception.error_message",
-                    e1.getMessage());
-            Object[] options = new Object[] { createDetailButton(),
-                    Messages.getMessage("error.message.close.button.label") };
-            JOptionPane.showOptionDialog(getMainFrame(), message, "Warning",
-                    JOptionPane.WARNING_MESSAGE, JOptionPane.WARNING_MESSAGE, null, options, null);
+			util.showWarningMessage(getMainFrame(), Messages.getMessage("doxygen_encoding_exception.error_message",e1.getMessage()));
 			logger.error(e1.getMessage(), e1);
 		} catch (Throwable e1) {
 			String messageStr = Messages.getMessage("doxygen_parse_exception_detail.error_message");
@@ -225,6 +209,42 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 		getContentPane().add(mainContentPanel);
 	}
 
+	class HelpButton extends JButton {
+		private static final long serialVersionUID = 1L;
+
+		static final String NAME = "export_dialog.help";
+
+		private HelpButton(ActionListener listener) {
+			setName(NAME);
+			setText(Messages.getMessage("reverse_dialog.help_button.title"));
+			addActionListener(listener);
+		}
+	}
+
+	class ReverseButton extends JButton {
+		private static final long serialVersionUID = 1L;
+
+		static final String NAME = "export_dialog.generate";
+
+		private ReverseButton(ActionListener listener) {
+			setName(NAME);
+			setText(Messages.getMessage("reverse_dialog.reverse_button.title"));
+			addActionListener(listener);
+		}
+	}
+
+	class CancelButton extends JButton {
+		private static final long serialVersionUID = 1L;
+
+		static final String NAME = "export_dialog.cancel";
+
+		private CancelButton(ActionListener listener) {
+			setName(NAME);
+			setText(Messages.getMessage("reverse_dialog.cancel_button.title"));
+			addActionListener(listener);
+		}
+	}
+
 	@Override
 	public void projectChanged(ProjectEvent arg0) {
 	}
@@ -258,49 +278,23 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
         sb.append(postposition);
         return sb.toString();
     }
-
+    
     private Object[] getOptions() {
-        JButton helpButton = createHelpButton();
-        setFont(helpButton);
-        return new Object[] { Messages.getMessage("error.message.ok.button.label"), helpButton };
-    }
-
-    private JButton createHelpButton() {
-        JButton button = createButton("export_dialog.help", "reverse_dialog.help_button.title",
-                createActionListener("help.url"));
-        return button;
-    }
-
-    private JButton createButton(String name, String Text, ActionListener listener) {
-        JButton button = new JButton();
-        button.setName(name);
-        button.setText(Messages.getMessage(Text));
-        button.addActionListener(listener);
-        return button;
-    }
-
-    private JButton createDetailButton() {
-        JButton button = createButton("doxygen_encoding_exception_error.help",
-                "doxygen_encoding_exception_error_help.button.label",
-                createActionListener("doxygen_encoding_exception_error_help.url"));
-        setFont(button);
-        return button;
-    }
-
-    private void setFont(JButton button) {
+        HelpButton button = createHelpButton();
         Object obj = UIManager.get("OptionPane.buttonFont", getLocale());
         if (obj instanceof Font) {
             Font font = (Font) obj;
             button.setFont(font);
         }
+        return new Object[] { Messages.getMessage("error.message.ok.button.label"), button };
     }
 
-    private ActionListener createActionListener(final String urlKeyString) {
-        return new ActionListener() {
+    private HelpButton createHelpButton() {
+        return new HelpButton(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Desktop desktop = Desktop.getDesktop();
                 try {
-                    URL url = new URL(Messages.getMessage(urlKeyString));
+                    URL url = new URL(Messages.getMessage("help.url"));
                     desktop.browse(url.toURI());
                 } catch (MalformedURLException e1) {
                     logger.error(e1.getMessage(), e1);
@@ -310,6 +304,6 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
                     logger.error(e1.getMessage(), e1);
                 }
             }
-        };
+        });
     }
 }
