@@ -40,9 +40,11 @@ import com.change_vision.jude.api.inf.AstahAPI;
 import com.change_vision.jude.api.inf.editor.TransactionManager;
 import com.change_vision.jude.api.inf.exception.InvalidEditingException;
 import com.change_vision.jude.api.inf.exception.LicenseNotFoundException;
+import com.change_vision.jude.api.inf.exception.NonCompatibleException;
 import com.change_vision.jude.api.inf.exception.ProjectLockedException;
 import com.change_vision.jude.api.inf.exception.ProjectNotFoundException;
 import com.change_vision.jude.api.inf.project.ProjectAccessor;
+import com.change_vision.jude.api.inf.project.ProjectAccessorFactory;
 import com.change_vision.jude.api.inf.project.ProjectEvent;
 import com.change_vision.jude.api.inf.project.ProjectEventListener;
 import com.change_vision.jude.api.inf.ui.IMessageDialogHandler;
@@ -122,13 +124,17 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
     }
 
 	private void parseXMLandEasyMerge() {
+	    
+        String iCurrentProject = null;
+        boolean isParseSucceeded = false;
+        
 		try {
 			String doxygenXml = fileChooserPanel.getXmlFileChooseText();
 			if (null != doxygenXml) {
 				doxygenXml = doxygenXml.trim();
 			}
 			if (!("".equals(doxygenXml))) {
-				String iCurrentProject = projectAccessor.getProjectPath();
+				iCurrentProject = projectAccessor.getProjectPath();
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
 				DoxygenXmlParser doxygenXmlParser = new DoxygenXmlParser();
@@ -148,6 +154,8 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 				ConfigUtil.saveCPlusXmlPath(doxygenXml);
 				projectAccessor.addProjectEventListener(this);
 				projectAccessor.open(iCurrentProject);
+				
+				isParseSucceeded = true;
 			} else {
 				util.showWarningMessage(getMainFrame(), Messages.getMessage("reverse_dialog.xml_folder_input_message"));
 			}
@@ -178,13 +186,49 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
             JOptionPane.showOptionDialog(getMainFrame(), getMessageString(messageStr, e1.getMessage()), "Warning",
                     JOptionPane.WARNING_MESSAGE, JOptionPane.WARNING_MESSAGE, null, getOptions(), null);
 		} finally {
-			if (TransactionManager.isInTransaction()) {
-				TransactionManager.abortTransaction();
-			}
-			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            if (!isParseSucceeded) {
+                if (TransactionManager.isInTransaction()) {
+                    TransactionManager.abortTransaction();
+                    resetProjectAccessor(iCurrentProject);
+                }
+            } else {
+                if (TransactionManager.isInTransaction()) {
+                    TransactionManager.endTransaction();
+                }
+            }
+
+            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
 	}
 
+    private void resetProjectAccessor(String iCurrentProject) {
+        try {
+            ProjectAccessorFactory.getProjectAccessor().close();
+            ProjectAccessorFactory.getProjectAccessor().open(iCurrentProject);
+         } catch (LicenseNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+         } catch (ProjectNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+         } catch (NonCompatibleException e) {
+               // TODO Auto-generated catch block
+                e.printStackTrace();
+         } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+         } catch (ProjectLockedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+         } catch (ClassNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (RuntimeException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }            
+   }
+    
     protected Creator createCreator(String doxygenXml) throws InvalidEditingException {
 		Creator creator = new Creator();
 		creator.setProjectAccessor(projectAccessor);
