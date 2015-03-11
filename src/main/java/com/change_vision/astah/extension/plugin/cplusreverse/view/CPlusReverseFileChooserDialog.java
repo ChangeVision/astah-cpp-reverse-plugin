@@ -206,28 +206,21 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
             ProjectAccessorFactory.getProjectAccessor().close();
             ProjectAccessorFactory.getProjectAccessor().open(iCurrentProject);
          } catch (LicenseNotFoundException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+             logger.error(e.getMessage(), e);
          } catch (ProjectNotFoundException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+             logger.error(e.getMessage(), e);
          } catch (NonCompatibleException e) {
-               // TODO Auto-generated catch block
-                e.printStackTrace();
+             logger.error(e.getMessage(), e);
          } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+             logger.error(e.getMessage(), e);
          } catch (ProjectLockedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+             logger.error(e.getMessage(), e);
          } catch (ClassNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+             logger.error(e.getMessage(), e);
         } catch (RuntimeException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+             logger.error(e.getMessage(), e);
         }            
-   }
+}
     
     protected Creator createCreator(String doxygenXml) throws InvalidEditingException {
 		Creator creator = new Creator();
