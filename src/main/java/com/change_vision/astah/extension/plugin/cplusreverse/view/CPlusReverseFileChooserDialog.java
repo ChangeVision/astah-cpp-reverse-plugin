@@ -203,8 +203,8 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 
     private void resetProjectAccessor(String iCurrentProject) {
         try {
-            ProjectAccessorFactory.getProjectAccessor().close();
-            ProjectAccessorFactory.getProjectAccessor().open(iCurrentProject);
+            projectAccessor.close();
+            projectAccessor.open(iCurrentProject);
          } catch (LicenseNotFoundException e) {
              logger.error(e.getMessage(), e);
          } catch (ProjectNotFoundException e) {
