@@ -1,7 +1,6 @@
 package com.change_vision.astah.extension.plugin.cplusreverse.view;
 
 import java.awt.BorderLayout;
-
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.FlowLayout;
