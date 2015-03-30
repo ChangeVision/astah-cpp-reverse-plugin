@@ -185,15 +185,13 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 			logger.error(e1.getMessage(), e1);
             JOptionPane.showOptionDialog(getMainFrame(), getMessageString(messageStr, e1.getMessage()), "Warning",
                     JOptionPane.WARNING_MESSAGE, JOptionPane.WARNING_MESSAGE, null, getOptions(), null);
-		} finally {
-		    if (!isParseSucceeded) {
-                if (TransactionManager.isInTransaction()) {
+		} finally {	    
+		    if (TransactionManager.isInTransaction()) {
+                if (isParseSucceeded) {
+                    TransactionManager.endTransaction();
+                } else {
                     TransactionManager.abortTransaction();
                     resetProjectAccessor(iCurrentProject);
-                }
-            } else {
-                if (TransactionManager.isInTransaction()) {
-                    TransactionManager.endTransaction();
                 }
             }
 			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
