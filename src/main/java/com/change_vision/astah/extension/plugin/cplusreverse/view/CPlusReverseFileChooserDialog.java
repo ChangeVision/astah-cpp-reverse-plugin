@@ -40,6 +40,7 @@ import com.change_vision.jude.api.inf.AstahAPI;
 import com.change_vision.jude.api.inf.editor.TransactionManager;
 import com.change_vision.jude.api.inf.exception.InvalidEditingException;
 import com.change_vision.jude.api.inf.exception.LicenseNotFoundException;
+import com.change_vision.jude.api.inf.exception.NonCompatibleException;
 import com.change_vision.jude.api.inf.exception.ProjectLockedException;
 import com.change_vision.jude.api.inf.exception.ProjectNotFoundException;
 import com.change_vision.jude.api.inf.project.ProjectAccessor;
@@ -122,13 +123,16 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
     }
 
 	private void parseXMLandEasyMerge() {
+	    String iCurrentProject = null;
+	    boolean isParseSucceeded = false;
+	    
 		try {
 			String doxygenXml = fileChooserPanel.getXmlFileChooseText();
 			if (null != doxygenXml) {
 				doxygenXml = doxygenXml.trim();
 			}
 			if (!("".equals(doxygenXml))) {
-				String iCurrentProject = projectAccessor.getProjectPath();
+				iCurrentProject = projectAccessor.getProjectPath();
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
 				DoxygenXmlParser doxygenXmlParser = new DoxygenXmlParser();
@@ -148,6 +152,8 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 				ConfigUtil.saveCPlusXmlPath(doxygenXml);
 				projectAccessor.addProjectEventListener(this);
 				projectAccessor.open(iCurrentProject);
+				
+				isParseSucceeded = true;
 			} else {
 				util.showWarningMessage(getMainFrame(), Messages.getMessage("reverse_dialog.xml_folder_input_message"));
 			}
@@ -178,13 +184,40 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
             JOptionPane.showOptionDialog(getMainFrame(), getMessageString(messageStr, e1.getMessage()), "Warning",
                     JOptionPane.WARNING_MESSAGE, JOptionPane.WARNING_MESSAGE, null, getOptions(), null);
 		} finally {
-			if (TransactionManager.isInTransaction()) {
-				TransactionManager.abortTransaction();
-			}
+		    
+		    if (TransactionManager.isInTransaction()) {
+                if (isParseSucceeded) {
+                    TransactionManager.endTransaction();
+                } else {
+                    TransactionManager.abortTransaction();
+                    resetProjectAccessor(iCurrentProject);
+                }
+            }
 			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
 	}
 
+    private void resetProjectAccessor(String iCurrentProject) {
+        try {
+            projectAccessor.close();
+            projectAccessor.open(iCurrentProject);
+         } catch (LicenseNotFoundException e) {
+             logger.error(e.getMessage(), e);
+         } catch (ProjectNotFoundException e) {
+             logger.error(e.getMessage(), e);
+         } catch (NonCompatibleException e) {
+             logger.error(e.getMessage(), e);
+         } catch (IOException e) {
+             logger.error(e.getMessage(), e);
+         } catch (ProjectLockedException e) {
+             logger.error(e.getMessage(), e);
+         } catch (ClassNotFoundException e) {
+             logger.error(e.getMessage(), e);
+        } catch (RuntimeException e) {
+             logger.error(e.getMessage(), e);
+        }            
+   }
+    
     protected Creator createCreator(String doxygenXml) throws InvalidEditingException {
 		Creator creator = new Creator();
 		creator.setProjectAccessor(projectAccessor);
