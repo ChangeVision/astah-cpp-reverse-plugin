@@ -124,7 +124,7 @@ public class CPlusReverseFileChooserPanel extends JPanel {
 			addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					JFileChooser chooser = new JFileChooser();
+                    JFileChooser chooser = new AdjustToggleButtonSizeFileChooser();
 					chooser.setDialogTitle("");
 					chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 					chooser.setCurrentDirectory(new File(ConfigUtil.getDefaultCPlusXmlDirectoryPath()));
