@@ -100,14 +100,15 @@ public class CPlusReverseFileChooserPanel extends JPanel {
 	class XmlFileChooseText extends JTextField {
 		private static final long serialVersionUID = 1L;
 
-		private static final int WIDTH = 300;
-		private static final int HEIGHT = 14;
+        private static final int NUMBER_OF_CHARACTERS = 30;
 		static final String NAME = "reverse_panel.xml_path";
 
 		public XmlFileChooseText() {
 			setName(NAME);
-			setPreferredSize(new Dimension(WIDTH, HEIGHT));
-			setMinimumSize(new Dimension(WIDTH, HEIGHT));
+            Dimension preferredSize = getPreferredSize();
+            int width = getFontMetrics(getFont()).stringWidth("m") * NUMBER_OF_CHARACTERS;
+            setPreferredSize(new Dimension(width, preferredSize.height));
+            setMinimumSize(new Dimension(width, preferredSize.height));
 			setText(ConfigUtil.getDefaultCPlusXmlDirectoryPath());
 		}
 	}
