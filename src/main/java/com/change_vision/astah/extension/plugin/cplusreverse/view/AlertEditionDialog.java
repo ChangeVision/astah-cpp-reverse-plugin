@@ -47,8 +47,6 @@ public class AlertEditionDialog extends JDialog {
 		super(owner);
 		logger.trace(Messages.getMessage("AlertEditionDialog.trace_message"));
 		setTitle(Messages.getMessage("AlertEditionDialog.title"));
-		setSize(new Dimension(280, 150));
-		setLocationRelativeTo(owner);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
 		Container c = getContentPane();
@@ -60,6 +58,7 @@ public class AlertEditionDialog extends JDialog {
 		JScrollPane scroll = new JScrollPane(pane);
 		c.add(scroll);
 		pack();
+        setLocationRelativeTo(owner);
 	}
 
 	@Override
