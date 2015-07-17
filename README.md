@@ -3,7 +3,7 @@ C++ Reverse Engineering Plugin
 
 Version
 ------------
-1.0.8
+1.0.9
 
 Available for
 ------------
@@ -16,10 +16,10 @@ reversing C++ Source code and generating it into xml via Doxygen.
 
 How to install
 ------------
-0. [Download the jar file.](http://astah.change-vision.com/plugins/cplusreverse/1.0.8.html)
-1. Deploy the jar file in the "plugins" folder under the Astah Install folder
-2. Start Astah
-3. You find that the [Import C++] has been added under the [Tool] - [C++] menu
+0. [Download the jar file.](http://astah.change-vision.com/plugins/cplusreverse/1.0.9.html)
+1. Deploy the jar file in the "plugins" folder under the Astah Install folder.
+2. Start Astah.
+3. The [Import C++] has been added under the [Tool] - [C++] menu.
 
 Reference
 ------------
@@ -29,7 +29,7 @@ http://astah.net/features/cpp-reverse-engineering
 
 License
 ------------
-Copyright 2014 Change Vision, Inc.
+Copyright 2015 Change Vision, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this work except in compliance with the License.
