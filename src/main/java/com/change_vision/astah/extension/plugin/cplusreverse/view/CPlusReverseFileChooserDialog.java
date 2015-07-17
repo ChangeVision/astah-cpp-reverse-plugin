@@ -55,8 +55,6 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 
 	private static final String NAME = "cplus_reverse";
 	private static final String ENTER = "\n";
-	private static int WIDTH = 520;
-	private static int HEIGHT = 120;
 	private IMessageDialogHandler util = Activator.getMessageHandler();
 
 	private JButton reverseButton;
@@ -69,7 +67,7 @@ public class CPlusReverseFileChooserDialog extends JDialog implements ProjectEve
 		setName(NAME);
 		setTitle(Messages.getMessage("reverse_dialog.title"));
 		createContents();
-		setSize(WIDTH, HEIGHT);
+        pack();
 		setLocationRelativeTo(window);
 
 		try {
