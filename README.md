@@ -3,7 +3,7 @@ C++ Reverse Engineering Plugin
 
 Version
 ------------
-1.0.9
+1.1.0
 
 Available for
 ------------
